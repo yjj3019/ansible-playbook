@@ -15,7 +15,7 @@
 
     - name: Transfer the script
       copy:
-        src=startrun.sh
+        src=files/startrun.sh
         dest=/tmp/startrun.sh
         mode=0700
 
@@ -37,3 +37,11 @@
         dest: "{{ todir }}"
         flat: yes
         validate_checksum: yes
+
+    - name: Local Directory Create
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /tmp/startrun.sh
+        - /tmp/{{ gather_filename }}
