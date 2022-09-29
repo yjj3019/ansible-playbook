@@ -15,9 +15,9 @@
 
     - name: Transfer the script
       copy:
-        src=files/startrun.sh
-        dest=/tmp/startrun.sh
-        mode=0700
+        src: "files/startrun.sh"
+        dest: "/tmp/startrun.sh"
+        mode: 0700
 
     - name: Shell Script Excute
       shell: ./startrun.sh
@@ -45,3 +45,4 @@
       with_items:
         - /tmp/startrun.sh
         - /tmp/{{ gather_filename }}
+
