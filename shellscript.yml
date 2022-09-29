@@ -1,0 +1,39 @@
+---
+- name: working machine
+  hosts: all
+  vars:
+    gather_filename: "{{ inventory_hostname }}_result.txt"
+    todir: "/tmp/gather-all/"
+  tasks:
+
+    - name: Local Directory Create
+      file:
+        path: "{{ todir }}"
+        state: directory
+        mode: 0755
+      delegate_to: localhost
+
+    - name: Transfer the script
+      copy:
+        src=startrun.sh
+        dest=/tmp/startrun.sh
+        mode=0700
+
+    - name: Shell Script Excute
+      shell: ./startrun.sh
+      args:
+        chdir: /tmp
+        executable: /bin/bash
+      register: shell_output
+
+    - name: copy the output to a local file
+      copy:
+        content: "{{ shell_output.stdout }}"
+        dest: "/tmp/{{ gather_filename }}"
+
+    - name: total file gather
+      fetch:
+        src: "/tmp/{{ gather_filename }}"
+        dest: "{{ todir }}"
+        flat: yes
+        validate_checksum: yes
