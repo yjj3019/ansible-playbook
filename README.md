@@ -8,3 +8,19 @@ ex)
 ip -o -4 a
 
 - 실행되어 수집된 파일은 localhost 의 /tmp/gahter-all/* 에 hostname_result.txt 형태로 수집됨.
+
+ansible-playbook - shellscript.yml
+yum meta data 를 가지고 rpm 패키지에 대한 의존성 체크를 진행함.
+
+아해 내용 수정 필요. 
+# Plase edit the data below
+#
+    todir: "/tmp/gather-all/"    # 수집될 파일의 경로 
+    sdir: "/Admin"               # 대상 서버의 메타 파일을 저장할 최상단 경로 
+    sfile: "rhel-7-server-rpms-meta-0929-1443.tgz"   # yum 메타 파일 이름
+    pkg_name:                    # 체크할 패키지 이름 명시 
+      - kernel
+      - nfs-utils
+
+결과는 /tmp/gather-all/(hostname)_yummeta.txt 형태로 저장됨.
+
