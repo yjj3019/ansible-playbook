@@ -59,9 +59,6 @@
     - name: Yum Install Dependency Check
       shell: "yum install --assumeno --disablerepo=* --enablerepo=localRepo_{{ todate.stdout }} {{ item }} | tee -a /tmp/{{ gather_filename }}"
       with_items:  "{{ pkg_name }}"
-#      with_items:
-#        - kernel
-#        - nfs-utils
 
     - name: total file gather
       fetch:
