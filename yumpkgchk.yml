@@ -1,0 +1,80 @@
+---
+- hosts: all
+  vars:
+#--------------------------------------------------------------------------#
+# Plase edit the data below
+#
+    gather_filename: "{{ inventory_hostname }}_yummeta.txt"
+    todir: "/tmp/gather-all/"
+    sdir: "/Admin"
+    sfile: "rhel-7-server-rpms-meta-0929-1443.tgz"
+    pkg_name:
+      - kernel
+      - nfs-utils
+#--------------------------------------------------------------------------#
+
+  tasks:
+
+    - name: Create Date
+      shell: "date +%m%d"
+      register: todate
+
+    - name: Local Directory Create
+      file:
+        path: "{{ todir }}"
+        state: directory
+        mode: 0755
+      delegate_to: localhost
+
+    - name: Remote Directory Create
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+      with_items:
+        - "{{ sdir }}"
+        - "{{ sdir }}/{{ todate.stdout }}"
+
+    - name: Transfer the Metadata file
+      copy:
+        src: "files/{{ sfile }}"
+        dest: "{{ sdir }}/{{ todate.stdout }}/rpm_repo.tgz"
+        mode: 0700
+
+    - name: extract archive
+      unarchive:
+        src: "{{ sdir }}/{{ todate.stdout }}/rpm_repo.tgz"
+        dest: "{{ sdir }}/{{ todate.stdout }}/"
+        remote_src: true
+        validate_certs: true
+
+    - name: Add repo Create
+      yum_repository:
+        name: "localRepo_{{ todate.stdout }}"
+        description: "Repo for Metadata"
+        baseurl: "file://{{ sdir }}/{{ todate.stdout }}"
+        gpgcheck: no
+        gpgkey: file:///etc/pki/gpg-key
+
+    - name: Yum Install Dependency Check
+      shell: "yum install --assumeno --disablerepo=* --enablerepo=localRepo_{{ todate.stdout }} {{ item }} | tee -a /tmp/{{ gather_filename }}"
+      with_items:  "{{ pkg_name }}"
+#      with_items:
+#        - kernel
+#        - nfs-utils
+
+    - name: total file gather
+      fetch:
+        src: "/tmp/{{ gather_filename }}"
+        dest: "{{ todir }}"
+        flat: yes
+        validate_checksum: yes
+
+    - name: Local Directory Delete
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - "{{ sdir }}/{{ todate.stdout }}"
+        - "/tmp/{{ gather_filename }}"
+        - "/etc/yum.repos.d/localRepo_{{ todate.stdout }}.repo"
